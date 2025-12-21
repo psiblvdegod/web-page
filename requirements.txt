@@ -8,3 +8,4 @@ python-dotenv>=1.0
 requests>=2.31
 gunicorn>=20.1
 requests-oauthlib>=2.0.0
+authlib>=1.2.1
