@@ -1,5 +1,7 @@
 ls
+echo -e "> cat tree static\n"
 tree static
+echo -e "> cat tree templates\n"
 tree templates
 echo -e "> cat templates/index.html\n"
 cat templates/index.html
