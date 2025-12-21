@@ -120,13 +120,11 @@
                         </form>
                     </div>
                     {% else %}
-                    <div class="mt-4 text-start">
-                        <p class="text-white-50">Чтобы добавить комментарий, пожалуйста авторизуйтесь</p>
-                        <div class="login-buttons">
-                            <a href="{{ url_for('login_yandex') }}" class="btn btn-light fw-bold login-button">Войти
-                                через Yandex</a>
-                            <a href="#" class="btn btn-light fw-bold login-button">Войти через Google</a>
-                        </div>
+                    <div class="login-buttons">
+                        <a href="{{ url_for('login_yandex') }}" class="btn btn-light fw-bold login-button">Войти через
+                            Yandex</a>
+                        <a href="{{ url_for('login_google') }}" class="btn btn-light fw-bold login-button">Войти через
+                            Google</a>
                     </div>
                     {% endif %}
 
