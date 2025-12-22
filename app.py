@@ -79,7 +79,7 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'index'
 
 # ============================
-# МОДЕЛИ БАЗЫ ДАННЫХ (УПРОЩЕННЫЕ)
+# МОДЕЛИ БАЗЫ ДАННЫХ
 # ============================
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -124,7 +124,51 @@ yandex_client = WebApplicationClient(YANDEX_CLIENT_ID) if YANDEX_CLIENT_ID else 
 google_client = WebApplicationClient(GOOGLE_CLIENT_ID) if GOOGLE_CLIENT_ID else None
 
 # ============================
-# МАРШРУТЫ (без изменений в основном)
+# ДАННЫЕ ДЛЯ GTM
+# ============================
+@app.before_request
+def before_request():
+    """Подготовка данных для Google Tag Manager"""
+    g.gtm_data = {
+        'page_path': request.path,
+        'user_authenticated': current_user.is_authenticated,
+        'user_id': current_user.id if current_user.is_authenticated else None,
+        'user_email': current_user.email if current_user.is_authenticated else None,
+        'auth_method': None,
+    }
+    
+    if current_user.is_authenticated:
+        if current_user.yandex_id:
+            g.gtm_data['auth_method'] = 'yandex'
+        elif current_user.google_id:
+            g.gtm_data['auth_method'] = 'google'
+
+# ============================
+# КОНТЕКСТНЫЙ ПРОЦЕССОР ДЛЯ GTM
+# ============================
+@app.context_processor
+def inject_gtm_data():
+    """Внедряет данные GTM во все шаблоны"""
+    gtm_data = getattr(g, 'gtm_data', {})
+    
+    gtm_json = {
+        'user_authenticated': gtm_data.get('user_authenticated', False),
+        'user_id': gtm_data.get('user_id'),
+        'user_email': gtm_data.get('user_email'),
+        'auth_method': gtm_data.get('auth_method'),
+        'page_path': gtm_data.get('page_path', ''),
+    }
+    
+    # Фильтруем None значения
+    gtm_json = {k: v for k, v in gtm_json.items() if v is not None}
+    
+    return {
+        'gtm_data': gtm_json,
+        'TARGET': TARGET,
+    }
+
+# ============================
+# МАРШРУТЫ
 # ============================
 @app.route('/')
 def index():
@@ -166,7 +210,7 @@ def delete_comment(comment_id):
     return redirect(url_for('comments'))
 
 # ============================
-# Яндекс OAuth (УПРОЩЕННЫЙ)
+# Яндекс OAuth (ИСПРАВЛЕННЫЕ URL)
 # ============================
 @app.route('/login/yandex')
 def login_yandex():
@@ -223,13 +267,12 @@ def callback_yandex():
             db.session.add(user)
             db.session.commit()
 
-    # Упрощенный вход с запоминанием
     login_user(user, remember=True)
     flash(f'Вы успешно вошли через Yandex как {user.name or user.email}!', 'success')
     return redirect(url_for('comments'))
 
 # ============================
-# Google OAuth (УПРОЩЕННЫЙ)
+# Google OAuth (ИСПРАВЛЕННЫЕ URL)
 # ============================
 @app.route('/login/google')
 def login_google():
@@ -292,7 +335,7 @@ def callback_google():
             db.session.commit()
 
     login_user(user, remember=True)
-    flash(f'Вы успешно вошли через Google как {user.name or user.email}!', 'success')
+    flash(f'Вы успешно вошел через Google как {user.name or user.email}!', 'success')
     return redirect(url_for('comments'))
 
 # ============================
