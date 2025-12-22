@@ -141,12 +141,12 @@
         width: 100%;
     }
 
-    /* Контейнер для списка комментариев с адаптивной высотой */
+    /* Убираем фиксированную высоту у контейнера комментариев */
     .comments-scrollable {
         flex: 1;
-        overflow-y: auto;
-        max-height: 60vh;
-        /* Максимальная высота, но может увеличиваться */
+        overflow-y: visible;
+        /* Меняем на visible вместо auto */
+        /* Убираем max-height чтобы контейнер расширялся по содержимому */
         min-height: 200px;
         /* Минимальная высота */
         padding-right: 5px;
@@ -156,8 +156,8 @@
         padding: 1rem;
     }
 
-    /* Стили для скроллбара */
-    .comments-scrollable::-webkit-scrollbar {
+    /* Убираем стили для скроллбара, так как он больше не нужен */
+    /* .comments-scrollable::-webkit-scrollbar {
         width: 6px;
     }
 
@@ -173,7 +173,7 @@
 
     .comments-scrollable::-webkit-scrollbar-thumb:hover {
         background: rgba(255, 255, 255, 0.3);
-    }
+    } */
 
     /* Форма и кнопки */
     .comment-form-container {
@@ -260,7 +260,7 @@
     /* Адаптивность для мобильных устройств */
     @media (max-width: 768px) {
         .comments-scrollable {
-            max-height: 50vh;
+            /* Убираем max-height для мобильных */
             padding: 0.75rem;
         }
 
@@ -288,19 +288,19 @@
         }
     }
 
-    /* Для очень маленьких экранов */
-    @media (max-height: 600px) {
+    /* Для очень маленьких экранов - убираем медиа-запрос с max-height */
+    /* @media (max-height: 600px) {
         .comments-scrollable {
             max-height: 40vh;
         }
-    }
+    } */
 
-    /* Для больших экранов */
-    @media (min-height: 900px) {
+    /* Для больших экранов - убираем медиа-запрос с max-height */
+    /* @media (min-height: 900px) {
         .comments-scrollable {
             max-height: 70vh;
         }
-    }
+    } */
 
     /* Эффекты при наведении */
     .comment:hover {
@@ -336,10 +336,12 @@
         opacity: 0.5;
     }
 
-    /* Новый заголовок страницы */
+    /* Новый заголовок страницы - теперь прокручивается */
     .page-header {
         text-align: center;
         margin-bottom: 1.5rem;
+        /* Убираем любые фиксированные позиции */
+        position: static;
     }
 
     .page-header h3 {
@@ -361,14 +363,14 @@
 
 {% block content %}
 <div class="comments-section">
-    <!-- Добавлен заголовок -->
+    <!-- Добавлен заголовок - теперь будет прокручиваться -->
     <div class="page-header">
         <h3>Comments Section</h3>
         <p>Share your thoughts with the community</p>
     </div>
 
     <div class="comments-content">
-        <!-- Контейнер для прокрутки комментариев -->
+        <!-- Контейнер для комментариев теперь без ограничения высоты -->
         <div class="comments-scrollable">
             {% if comments %}
             {% for c in comments %}
@@ -471,23 +473,14 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Функция для автоматической прокрутки к новым комментариям
+        // Убираем автоматическую прокрутку к низу, так как теперь весь контент прокручивается
         const commentsContainer = document.querySelector('.comments-scrollable');
         if (commentsContainer) {
-            // Прокручиваем к низу, если есть комментарии
-            if (commentsContainer.scrollHeight > commentsContainer.clientHeight) {
-                commentsContainer.scrollTop = commentsContainer.scrollHeight;
-            }
+            // Прокручиваем к началу, чтобы видеть заголовок
+            window.scrollTo(0, 0);
 
-            // Добавляем обработчик для плавной прокрутки при добавлении новых комментариев
-            const observer = new MutationObserver(function () {
-                commentsContainer.scrollTo({
-                    top: commentsContainer.scrollHeight,
-                    behavior: 'smooth'
-                });
-            });
-
-            observer.observe(commentsContainer, { childList: true, subtree: true });
+            // Убираем observer для автоматической прокрутки
+            // так как теперь весь контент прокручивается естественно
         }
 
         // Добавляем класс для страницы комментариев
