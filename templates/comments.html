@@ -1,272 +1,245 @@
-<!doctype html>
-<html lang="ru" class="h-100" data-bs-theme="auto">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Comments · Cover</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="{{ url_for('static', filename='css/cover.css') }}" rel="stylesheet" />
-    <style>
-        body {
-            overflow: hidden;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            position: relative;
-        }
+{% block title %}Comments · Cover{% endblock %}
 
-        .gif-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            object-fit: cover;
-            opacity: 0.7;
-        }
+{% block styles %}
+<style>
+    body {
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        position: relative;
+    }
 
-        .cover-container {
-            position: relative;
-            z-index: 1;
-            color: white;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
-        }
+    .gif-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        object-fit: cover;
+        opacity: 0.7;
+    }
 
-        .comment {
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 8px;
-            margin-bottom: .75rem;
-            text-align: left;
-        }
+    .cover-container {
+        position: relative;
+        z-index: 1;
+        color: white;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+    }
 
-        .comment .author {
-            font-weight: 600;
-        }
+    .comment {
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 8px;
+        margin-bottom: .75rem;
+        text-align: left;
+    }
 
-        .comment .time {
-            font-size: .85rem;
-            color: rgba(255, 255, 255, 0.5);
-        }
+    .comment .author {
+        font-weight: 600;
+    }
 
-        .login-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 1rem;
-        }
+    .comment .time {
+        font-size: .85rem;
+        color: rgba(255, 255, 255, 0.5);
+    }
 
-        .login-button {
-            flex: 1;
-            max-width: 200px;
-        }
+    .login-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 1rem;
+    }
 
-        .auth-status {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 15px;
-            padding: 1rem 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
+    .login-button {
+        flex: 1;
+        max-width: 200px;
+    }
 
-        .auth-info {
-            flex-grow: 1;
-        }
+    .auth-status {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 15px;
+        padding: 1rem 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
-        .auth-buttons {
-            display: flex;
-            gap: 10px;
-        }
+    .auth-info {
+        flex-grow: 1;
+    }
 
-        .auth-buttons .btn {
-            flex: 1;
-            min-width: 120px;
-        }
+    .auth-buttons {
+        display: flex;
+        gap: 10px;
+    }
 
-        /* Основные изменения для фиксации макета */
-        body.comments-page {
-            height: 100vh;
-        }
+    .auth-buttons .btn {
+        flex: 1;
+        min-width: 120px;
+    }
 
-        .comments-page .cover-container {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 1rem;
-        }
+    /* Основные изменения для фиксации макета */
+    body.comments-page {
+        height: 100vh;
+    }
 
-        .comments-page main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-            overflow: hidden;
-        }
+    .comments-page .cover-container {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+    }
 
-        .comments-scrollable {
-            flex: 1;
-            overflow-y: auto;
-            min-height: 0;
-            max-height: 100%;
-            padding-right: 5px;
-            margin-bottom: 1.5rem;
-        }
+    .comments-page main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+    }
 
-        .comments-scrollable::-webkit-scrollbar {
-            width: 8px;
-        }
+    .comments-scrollable {
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0;
+        max-height: 100%;
+        padding-right: 5px;
+        margin-bottom: 1.5rem;
+    }
 
-        .comments-scrollable::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 4px;
-        }
+    .comments-scrollable::-webkit-scrollbar {
+        width: 8px;
+    }
 
-        .comments-scrollable::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 4px;
-        }
+    .comments-scrollable::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+    }
 
-        .comments-scrollable::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.4);
-        }
+    .comments-scrollable::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+    }
 
-        /* Фиксированные элементы */
-        .page-header,
-        .page-footer {
-            flex-shrink: 0;
-        }
+    .comments-scrollable::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.4);
+    }
 
-        .comment-form-container,
-        .login-buttons-container {
-            flex-shrink: 0;
-            margin-top: auto;
-        }
+    /* Фиксированные элементы */
+    .page-header,
+    .page-footer {
+        flex-shrink: 0;
+    }
 
-        /* Для неавторизованных пользователей - скрыть форму и показать только кнопки */
-        .comment-form-container:not(.authenticated) {
-            display: none;
-        }
-    </style>
-</head>
+    .comment-form-container,
+    .login-buttons-container {
+        flex-shrink: 0;
+        margin-top: auto;
+    }
 
-<body class="d-flex h-100 text-center text-bg-dark comments-page">
-    <!-- Фоновая гифка для страницы комментариев -->
-    <img src="{{ url_for('static', filename='images/comments-back.gif') }}" class="gif-background"
-        alt="Comments background">
+    /* Для неавторизованных пользователей - скрыть форму и показать только кнопки */
+    .comment-form-container:not(.authenticated) {
+        display: none;
+    }
+</style>
+{% endblock %}
 
-    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
-        <header class="mb-auto page-header">
-            <div>
-                <h3 class="float-md-start mb-0">Cover</h3>
-                <nav class="nav nav-masthead justify-content-center float-md-end">
-                    <a class="nav-link fw-bold py-1 px-0" href="{{ url_for('index') }}">Home</a>
-                    <a class="nav-link fw-bold py-1 px-0" href="{{ url_for('about') }}">About</a>
-                    <a class="nav-link fw-bold py-1 px-0" href="{{ url_for('contacts') }}">Contact</a>
-                    <a class="nav-link fw-bold py-1 px-0 active" href="{{ url_for('comments') }}">Comments</a>
-                </nav>
+{% block background %}
+<img src="{{ url_for('static', filename='images/comments-back.gif') }}" class="gif-background"
+    alt="Comments background">
+{% endblock %}
+
+{% block content %}
+<h1>Комментарии</h1>
+<p class="lead text-white-50 mb-3">Здесь показаны комментарии пользователей.</p>
+
+<div class="row justify-content-center h-100">
+    <div class="col-lg-8 h-100 d-flex flex-column">
+        <!-- Контейнер для прокрутки комментариев -->
+        <div class="comments-scrollable">
+            {% if comments %}
+            {% for c in comments %}
+            <div class="comment mt-3">
+                <div class="author">{{ c.user.name or c.user.email }} <span class="time">— {{
+                        c.created_at.strftime('%Y-%m-%d %H:%M') }}</span></div>
+                <div class="body text-white-50">{{ c.body }}</div>
+                {% if current_user.is_authenticated and c.user_id == current_user.id %}
+                <form action="{{ url_for('delete_comment', comment_id=c.id) }}" method="post" style="display:inline;">
+                    <button class="btn btn-sm btn-outline-danger mt-2" type="submit">Удалить</button>
+                </form>
+                {% endif %}
             </div>
-        </header>
+            {% endfor %}
+            {% else %}
+            <p class="text-white-50 mt-4">Пока нет комментариев.</p>
+            {% endif %}
+        </div>
 
-        <main class="px-3">
-            <h1>Комментарии</h1>
-            <p class="lead text-white-50 mb-3">Здесь показаны комментарии пользователей.</p>
-
-            <div class="row justify-content-center h-100">
-                <div class="col-lg-8 h-100 d-flex flex-column">
-                    <!-- Контейнер для прокрутки комментариев -->
-                    <div class="comments-scrollable">
-                        {% if comments %}
-                        {% for c in comments %}
-                        <div class="comment mt-3">
-                            <div class="author">{{ c.user.name or c.user.email }} <span class="time">— {{
-                                    c.created_at.strftime('%Y-%m-%d %H:%M') }}</span></div>
-                            <div class="body text-white-50">{{ c.body }}</div>
-                            {% if current_user.is_authenticated and c.user_id == current_user.id %}
-                            <form action="{{ url_for('delete_comment', comment_id=c.id) }}" method="post"
-                                style="display:inline;">
-                                <button class="btn btn-sm btn-outline-danger mt-2" type="submit">Удалить</button>
-                            </form>
-                            {% endif %}
-                        </div>
+        <!-- Форма добавления комментария (только для авторизованных) -->
+        {% if current_user.is_authenticated %}
+        <div class="comment-form-container authenticated mt-3">
+            <form method="post" class="mt-3">
+                {{ form.csrf_token }}
+                <div class="mb-3 text-start">
+                    <label for="body" class="form-label">Новый комментарий</label>
+                    {{ form.body(class="form-control", id="body", rows="3", placeholder="Ваш комментарий") }}
+                    {% if form.body.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.body.errors %}
+                        <span>{{ error }}</span>
                         {% endfor %}
-                        {% else %}
-                        <p class="text-white-50 mt-4">Пока нет комментариев.</p>
-                        {% endif %}
-                    </div>
-
-                    <!-- Форма добавления комментария (только для авторизованных) -->
-                    {% if current_user.is_authenticated %}
-                    <div class="comment-form-container authenticated mt-3">
-                        <form method="post" class="mt-3">
-                            {{ form.csrf_token }}
-                            <div class="mb-3 text-start">
-                                <label for="body" class="form-label">Новый комментарий</label>
-                                {{ form.body(class="form-control", id="body", rows="3", placeholder="Ваш комментарий")
-                                }}
-                                {% if form.body.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in form.body.errors %}
-                                    <span>{{ error }}</span>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="text-center">
-                                {{ form.submit(class_="btn btn-light fw-bold border-white bg-white") }}
-                            </div>
-                        </form>
-                    </div>
-                    {% else %}
-                    <!-- Кнопки входа (только для неавторизованных) -->
-                    <div class="login-buttons-container mt-3">
-                        <div class="login-buttons">
-                            <a href="{{ url_for('login_yandex') }}" class="btn btn-light fw-bold login-button">Войти
-                                через
-                                Yandex</a>
-                            <a href="{{ url_for('login_google') }}" class="btn btn-light fw-bold login-button">Войти
-                                через
-                                Google</a>
-                        </div>
-                        <div class="mt-3 text-center">
-                            <a href="{{ url_for('index') }}" class="btn btn-outline-light fw-bold">На главную</a>
-                        </div>
                     </div>
                     {% endif %}
                 </div>
-            </div>
-        </main>
-
-        <div class="mt-auto page-footer">
-            {% if current_user.is_authenticated %}
-            <div class="auth-status">
-                <div class="auth-info">
-                    Вы вошли как <strong>{{ current_user.name or current_user.email }}</strong>
+                <div class="text-center">
+                    {{ form.submit(class_="btn btn-light fw-bold border-white bg-white") }}
                 </div>
-                <div class="auth-buttons">
-                    <a href="{{ url_for('index') }}" class="btn btn-light fw-bold">На главную</a>
-                    <a href="{{ url_for('logout') }}" class="btn btn-outline-light fw-bold">Выйти</a>
-                </div>
-            </div>
-            {% endif %}
+            </form>
         </div>
+        {% else %}
+        <!-- Кнопки входа (только для неавторизованных) -->
+        <div class="login-buttons-container mt-3">
+            <div class="login-buttons">
+                <a href="{{ url_for('login_yandex') }}" class="btn btn-light fw-bold login-button">Войти через
+                    Yandex</a>
+                <a href="{{ url_for('login_google') }}" class="btn btn-light fw-bold login-button">Войти через
+                    Google</a>
+            </div>
+            <div class="mt-3 text-center">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-light fw-bold">На главную</a>
+            </div>
+        </div>
+        {% endif %}
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/color-modes.js') }}"></script>
-    <script>
-        // Удаляем старый JS код для регулировки высоты, так как теперь используем CSS-решение
-        document.addEventListener('DOMContentLoaded', function () {
-            // Функция для автоматической прокрутки к новым комментариям
-            const commentsContainer = document.querySelector('.comments-scrollable');
-            if (commentsContainer && commentsContainer.scrollHeight > commentsContainer.clientHeight) {
-                commentsContainer.scrollTop = commentsContainer.scrollHeight;
-            }
-        });
-    </script>
-</body>
+{% if current_user.is_authenticated %}
+<div class="auth-status">
+    <div class="auth-info">
+        Вы вошли как <strong>{{ current_user.name or current_user.email }}</strong>
+    </div>
+    <div class="auth-buttons">
+        <a href="{{ url_for('index') }}" class="btn btn-light fw-bold">На главную</a>
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-light fw-bold">Выйти</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
 
-</html>
+{% block scripts %}
+<script>
+    // Удаляем старый JS код для регулировки высоты, так как теперь используем CSS-решение
+    document.addEventListener('DOMContentLoaded', function () {
+        // Функция для автоматической прокрутки к новым комментариям
+        const commentsContainer = document.querySelector('.comments-scrollable');
+        if (commentsContainer && commentsContainer.scrollHeight > commentsContainer.clientHeight) {
+            commentsContainer.scrollTop = commentsContainer.scrollHeight;
+        }
+    });
+</script>
+{% endblock %}
