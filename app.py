@@ -99,8 +99,8 @@ class Comment(db.Model):
 # ФОРМЫ
 # ============================
 class CommentForm(FlaskForm):
-    body = TextAreaField('Комментарий', validators=[DataRequired(), Length(min=1, max=500)])
-    submit = SubmitField('Отправить')
+    body = TextAreaField('Comment', validators=[DataRequired(), Length(min=1, max=500)])
+    submit = SubmitField('Send')
 
 # ============================
 # LOGIN MANAGER
