@@ -3,7 +3,7 @@ import os
 import secrets
 from datetime import datetime
 from pathlib import Path
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash, g
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_wtf import FlaskForm
@@ -125,22 +125,51 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 # ============================
+# ДАННЫЕ ДЛЯ GTM
+# ============================
+@app.before_request
+def before_request():
+    """Подготовка данных для Google Tag Manager перед каждым запросом"""
+    g.gtm_data = {
+        'page_path': request.path,
+        'page_url': request.url,
+        'user_agent': request.user_agent.string if request.user_agent else None,
+        'user_ip': request.remote_addr,
+        'user_authenticated': current_user.is_authenticated,
+        'user_id': current_user.id if current_user.is_authenticated else None,
+        'user_email': current_user.email if current_user.is_authenticated else None,
+        'auth_method': None,
+        'gtm_events': []  # Список событий для отправки в GTM
+    }
+    
+    if current_user.is_authenticated:
+        if current_user.yandex_id:
+            g.gtm_data['auth_method'] = 'yandex'
+        elif current_user.google_id:
+            g.gtm_data['auth_method'] = 'google'
+
+# ============================
 # ОСНОВНЫЕ МАРШРУТЫ
 # ============================
 @app.route('/')
 def index():
+    g.gtm_data['gtm_events'].append('page_view_home')
     return render_template('index.html')
 
 @app.route('/about')
 def about():
+    g.gtm_data['gtm_events'].append('page_view_about')
     return render_template('about.html')
 
 @app.route('/contacts')
 def contacts():
+    g.gtm_data['gtm_events'].append('page_view_contacts')
     return render_template('contacts.html')
 
 @app.route('/comments', methods=['GET', 'POST'])
 def comments():
+    g.gtm_data['gtm_events'].append('page_view_comments')
+    
     form = CommentForm()
     comments_list = Comment.query.order_by(Comment.created_at.desc()).all()
 
@@ -149,6 +178,11 @@ def comments():
         db.session.add(comment)
         db.session.commit()
         flash('Комментарий добавлен!', 'success')
+        
+        # Добавляем событие для GTM
+        g.gtm_data['gtm_events'].append('comment_added')
+        g.gtm_data['comment_length'] = len(form.body.data)
+        
         return redirect(url_for('comments'))
 
     return render_template('comments.html', comments=comments_list, form=form)
@@ -164,6 +198,10 @@ def delete_comment(comment_id):
     db.session.delete(comment)
     db.session.commit()
     flash('Комментарий удалён.', 'success')
+    
+    # Добавляем событие для GTM
+    g.gtm_data['gtm_events'].append('comment_deleted')
+    
     return redirect(url_for('comments'))
 
 # ============================
@@ -230,6 +268,11 @@ def callback_yandex():
 
     login_user(user)
     flash(f'Вы успешно вошли через Yandex как {user.name or user.email}!', 'success')
+    
+    # Добавляем событие для GTM
+    g.gtm_data['gtm_events'].append('yandex_login_success')
+    g.gtm_data['user_email'] = user.email
+    
     return redirect(url_for('comments'))
 
 # ============================
@@ -301,6 +344,11 @@ def callback_google():
 
     login_user(user)
     flash(f'Вы успешно вошли через Google как {user.name or user.email}!', 'success')
+    
+    # Добавляем событие для GTM
+    g.gtm_data['gtm_events'].append('google_login_success')
+    g.gtm_data['user_email'] = user.email
+    
     return redirect(url_for('comments'))
 
 # ============================
@@ -309,9 +357,38 @@ def callback_google():
 @app.route('/logout')
 @login_required
 def logout():
+    # Добавляем событие для GTM перед выходом
+    g.gtm_data['gtm_events'].append('user_logout')
+    
     logout_user()
     flash('Вы вышли из системы.', 'info')
     return redirect(url_for('index'))
+
+# ============================
+# КОНТЕКСТНЫЙ ПРОЦЕССОР ДЛЯ GTM
+# ============================
+@app.context_processor
+def inject_gtm_data():
+    """Внедряет данные GTM во все шаблоны"""
+    gtm_data = getattr(g, 'gtm_data', {})
+    
+    # Формируем JSON для передачи в JavaScript
+    gtm_json = {
+        'user_authenticated': gtm_data.get('user_authenticated', False),
+        'user_id': gtm_data.get('user_id'),
+        'user_email': gtm_data.get('user_email'),
+        'auth_method': gtm_data.get('auth_method'),
+        'page_path': gtm_data.get('page_path', ''),
+        'gtm_events': gtm_data.get('gtm_events', [])
+    }
+    
+    # Фильтруем None значения
+    gtm_json = {k: v for k, v in gtm_json.items() if v is not None}
+    
+    return {
+        'gtm_data': gtm_json,
+        'gtm_events_json': gtm_data.get('gtm_events', [])
+    }
 
 # ============================
 # ЗАПУСК ПРИЛОЖЕНИЯ
@@ -341,7 +418,9 @@ if __name__ == '__main__':
     print(f"🎯 TARGET mode: {TARGET}")
     print(f"🏠 Yandex redirect URI: {YANDEX_REDIRECT_URI}")
     print(f"🔵 Google redirect URI: {GOOGLE_REDIRECT_URI}")
+    print("📊 GTM настроен для сбора метрик")
     print("🚀 Приложение запускается на http://127.0.0.1:5001")
     print("=" * 60)
 
     app.run(host='0.0.0.0', port=5001, debug=(TARGET == 'LOCAL'))
+    
