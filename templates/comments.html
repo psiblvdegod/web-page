@@ -4,12 +4,12 @@
 
 {% block styles %}
 <style>
-    body {
-        overflow: hidden;
-        margin: 0;
-        padding: 0;
-        height: 100vh;
-        position: relative;
+    /* Убираем фиксированную высоту для возможности скролла всей страницы */
+    body.comments-page {
+        overflow-y: auto;
+        /* Разрешаем вертикальную прокрутку */
+        min-height: 100vh;
+        /* Минимальная высота на весь экран */
     }
 
     .gif-background {
@@ -21,6 +21,8 @@
         z-index: -1;
         object-fit: cover;
         opacity: 0.7;
+        pointer-events: none;
+        /* Чтобы не мешал скроллу */
     }
 
     .cover-container {
@@ -28,6 +30,10 @@
         z-index: 1;
         color: white;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+        min-height: 100vh;
+        /* Минимум на весь экран */
+        display: flex;
+        flex-direction: column;
     }
 
     .comment {
@@ -36,15 +42,25 @@
         border-radius: 8px;
         margin-bottom: .75rem;
         text-align: left;
+        backdrop-filter: blur(5px);
     }
 
     .comment .author {
         font-weight: 600;
+        color: #fff;
+        margin-bottom: 0.5rem;
     }
 
     .comment .time {
         font-size: .85rem;
         color: rgba(255, 255, 255, 0.5);
+        margin-left: 0.5rem;
+    }
+
+    .comment .body {
+        color: rgba(255, 255, 255, 0.85);
+        line-height: 1.5;
+        word-wrap: break-word;
     }
 
     .login-buttons {
@@ -52,11 +68,13 @@
         gap: 10px;
         justify-content: center;
         margin-top: 1rem;
+        flex-wrap: wrap;
     }
 
     .login-button {
         flex: 1;
-        max-width: 200px;
+        min-width: 180px;
+        max-width: 250px;
     }
 
     .auth-status {
@@ -65,12 +83,17 @@
         justify-content: space-between;
         flex-wrap: wrap;
         gap: 15px;
-        padding: 1rem 0;
+        padding: 1.5rem 0;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.3);
+        margin-top: 2rem;
+        border-radius: 8px;
+        padding: 1rem;
     }
 
     .auth-info {
         flex-grow: 1;
+        color: rgba(255, 255, 255, 0.9);
     }
 
     .auth-buttons {
@@ -81,37 +104,44 @@
     .auth-buttons .btn {
         flex: 1;
         min-width: 120px;
+        white-space: nowrap;
     }
 
-    /* Основные изменения для фиксации макета */
-    body.comments-page {
-        height: 100vh;
-    }
-
+    /* Основной контейнер с гибкой высотой */
     .comments-page .cover-container {
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-        padding: 1rem;
+        min-height: 100vh;
+        padding: 1rem 0;
     }
 
     .comments-page main {
         flex: 1;
         display: flex;
         flex-direction: column;
-        min-height: 0;
-        overflow: hidden;
     }
 
+    .comments-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 2rem;
+    }
+
+    /* Контейнер для списка комментариев с адаптивной высотой */
     .comments-scrollable {
         flex: 1;
         overflow-y: auto;
-        min-height: 0;
-        max-height: 100%;
-        padding-right: 5px;
-        margin-bottom: 1.5rem;
+        max-height: 60vh;
+        /* Максимальная высота, но может увеличиваться */
+        min-height: 200px;
+        /* Минимальная высота */
+        padding-right: 10px;
+        margin-bottom: 2rem;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 1rem;
     }
 
+    /* Стили для скроллбара */
     .comments-scrollable::-webkit-scrollbar {
         width: 8px;
     }
@@ -130,21 +160,88 @@
         background: rgba(255, 255, 255, 0.4);
     }
 
-    /* Фиксированные элементы */
-    .page-header,
-    .page-footer {
-        flex-shrink: 0;
+    /* Форма и кнопки */
+    .comment-form-container {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-top: 1rem;
     }
 
-    .comment-form-container,
     .login-buttons-container {
-        flex-shrink: 0;
-        margin-top: auto;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-top: 1rem;
     }
 
-    /* Для неавторизованных пользователей - скрыть форму и показать только кнопки */
-    .comment-form-container:not(.authenticated) {
-        display: none;
+    /* Адаптивность для мобильных устройств */
+    @media (max-width: 768px) {
+        .comments-scrollable {
+            max-height: 50vh;
+        }
+
+        .login-buttons {
+            flex-direction: column;
+        }
+
+        .login-button {
+            min-width: 100%;
+        }
+
+        .auth-status {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .auth-buttons {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* Для очень маленьких экранов */
+    @media (max-height: 600px) {
+        .comments-scrollable {
+            max-height: 40vh;
+        }
+    }
+
+    /* Для больших экранов */
+    @media (min-height: 900px) {
+        .comments-scrollable {
+            max-height: 70vh;
+        }
+    }
+
+    /* Эффекты при наведении */
+    .comment:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateY(-1px);
+        transition: all 0.2s ease;
+    }
+
+    /* Кнопка удаления комментария */
+    .comment form button {
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+    }
+
+    .comment:hover form button {
+        opacity: 1;
+    }
+
+    /* Заголовок страницы */
+    .page-title {
+        text-align: center;
+        margin-bottom: 2rem;
+        color: #fff;
+    }
+
+    .page-subtitle {
+        color: rgba(255, 255, 255, 0.7);
+        text-align: center;
+        margin-bottom: 2rem;
     }
 </style>
 {% endblock %}
@@ -155,77 +252,124 @@
 {% endblock %}
 
 {% block content %}
-<h1>Комментарии</h1>
-<p class="lead text-white-50 mb-3">Здесь показаны комментарии пользователей.</p>
+<div class="comments-section">
+    <div class="page-title">
+        <h1>Комментарии</h1>
+        <p class="lead text-white-50 mb-3">Здесь показаны комментарии пользователей.</p>
+    </div>
 
-<div class="row justify-content-center h-100">
-    <div class="col-lg-8 h-100 d-flex flex-column">
-        <!-- Контейнер для прокрутки комментариев -->
-        <div class="comments-scrollable">
-            {% if comments %}
-            {% for c in comments %}
-            <div class="comment mt-3">
-                <div class="author">{{ c.user.name or c.user.email }} <span class="time">— {{
-                        c.created_at.strftime('%Y-%m-%d %H:%M') }}</span></div>
-                <div class="body text-white-50">{{ c.body }}</div>
-                {% if current_user.is_authenticated and c.user_id == current_user.id %}
-                <form action="{{ url_for('delete_comment', comment_id=c.id) }}" method="post" style="display:inline;">
-                    <button class="btn btn-sm btn-outline-danger mt-2" type="submit">Удалить</button>
-                </form>
-                {% endif %}
-            </div>
-            {% endfor %}
-            {% else %}
-            <p class="text-white-50 mt-4">Пока нет комментариев.</p>
-            {% endif %}
-        </div>
-
-        <!-- Форма добавления комментария (только для авторизованных) -->
-        {% if current_user.is_authenticated %}
-        <div class="comment-form-container authenticated mt-3">
-            <form method="post" class="mt-3">
-                {{ form.csrf_token }}
-                <div class="mb-3 text-start">
-                    <label for="body" class="form-label">Новый комментарий</label>
-                    {{ form.body(class="form-control", id="body", rows="3", placeholder="Ваш комментарий") }}
-                    {% if form.body.errors %}
-                    <div class="invalid-feedback d-block">
-                        {% for error in form.body.errors %}
-                        <span>{{ error }}</span>
-                        {% endfor %}
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+            <!-- Контейнер для прокрутки комментариев -->
+            <div class="comments-scrollable">
+                {% if comments %}
+                {% for c in comments %}
+                <div class="comment">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="author">{{ c.user.name or c.user.email }}</div>
+                        <div class="time">{{ c.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                    </div>
+                    <div class="body mt-2">{{ c.body }}</div>
+                    {% if current_user.is_authenticated and c.user_id == current_user.id %}
+                    <div class="mt-2">
+                        <form action="{{ url_for('delete_comment', comment_id=c.id) }}" method="post"
+                            onsubmit="return confirm('Удалить этот комментарий?');">
+                            <button class="btn btn-sm btn-outline-danger" type="submit">
+                                <i class="fas fa-trash"></i> Удалить
+                            </button>
+                        </form>
                     </div>
                     {% endif %}
                 </div>
-                <div class="text-center">
-                    {{ form.submit(class_="btn btn-light fw-bold border-white bg-white") }}
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-comments fa-3x mb-3 text-white-50"></i>
+                    <p class="text-white-50 fs-5">Пока нет комментариев. Будьте первым!</p>
                 </div>
-            </form>
-        </div>
-        {% else %}
-        <!-- Кнопки входа (только для неавторизованных) -->
-        <div class="login-buttons-container mt-3">
-            <div class="login-buttons">
-                <a href="{{ url_for('login_yandex') }}" class="btn btn-light fw-bold login-button">Войти через
-                    Yandex</a>
-                <a href="{{ url_for('login_google') }}" class="btn btn-light fw-bold login-button">Войти через
-                    Google</a>
+                {% endif %}
             </div>
-            <div class="mt-3 text-center">
-                <a href="{{ url_for('index') }}" class="btn btn-outline-light fw-bold">На главную</a>
+
+            <!-- Форма добавления комментария (только для авторизованных) -->
+            {% if current_user.is_authenticated %}
+            <div class="comment-form-container authenticated">
+                <h4 class="text-white mb-3"><i class="fas fa-edit me-2"></i>Добавить комментарий</h4>
+                <form method="post" class="mt-3" id="commentForm">
+                    {{ form.csrf_token }}
+                    <div class="mb-3">
+                        <label for="body" class="form-label text-white-50">Ваше сообщение</label>
+                        {{ form.body(class="form-control bg-dark text-white border-dark",
+                        id="body",
+                        rows="4",
+                        placeholder="Напишите ваш комментарий здесь...",
+                        oninput="updateCharCount()") }}
+                        <div class="form-text text-white-50 mt-1">
+                            <span id="charCount">0</span>/500 символов
+                        </div>
+                        {% if form.body.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.body.errors %}
+                            <span class="text-warning">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="text-center">
+                        {{ form.submit(class_="btn btn-light fw-bold px-4 py-2") }}
+                        <button type="button" class="btn btn-outline-light ms-2" onclick="clearForm()">
+                            Очистить
+                        </button>
+                    </div>
+                </form>
             </div>
+            {% else %}
+            <!-- Кнопки входа (только для неавторизованных) -->
+            <div class="login-buttons-container">
+                <h4 class="text-white mb-3 text-center"><i class="fas fa-sign-in-alt me-2"></i>Войдите, чтобы
+                    комментировать</h4>
+                <div class="login-buttons">
+                    <a href="{{ url_for('login_yandex') }}"
+                        class="btn btn-light fw-bold login-button d-flex align-items-center justify-content-center"
+                        onclick="trackLoginClick('yandex')">
+                        <i class="fab fa-yandex me-2"></i>
+                        Войти через Яндекс
+                    </a>
+                    <a href="{{ url_for('login_google') }}"
+                        class="btn btn-light fw-bold login-button d-flex align-items-center justify-content-center"
+                        onclick="trackLoginClick('google')">
+                        <i class="fab fa-google me-2"></i>
+                        Войти через Google
+                    </a>
+                </div>
+                <div class="mt-4 text-center">
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-light fw-bold px-4">
+                        <i class="fas fa-home me-2"></i>На главную
+                    </a>
+                </div>
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
     </div>
 </div>
 
 {% if current_user.is_authenticated %}
-<div class="auth-status">
+<div class="auth-status mt-4">
     <div class="auth-info">
-        Вы вошли как <strong>{{ current_user.name or current_user.email }}</strong>
+        <i class="fas fa-user-circle me-2"></i>
+        Вы вошли как <strong class="text-warning">{{ current_user.name or current_user.email }}</strong>
+        {% if current_user.yandex_id %}
+        <span class="badge bg-info ms-2"><i class="fab fa-yandex"></i> Яндекс</span>
+        {% elif current_user.google_id %}
+        <span class="badge bg-danger ms-2"><i class="fab fa-google"></i> Google</span>
+        {% endif %}
     </div>
     <div class="auth-buttons">
-        <a href="{{ url_for('index') }}" class="btn btn-light fw-bold">На главную</a>
-        <a href="{{ url_for('logout') }}" class="btn btn-outline-light fw-bold">Выйти</a>
+        <a href="{{ url_for('index') }}" class="btn btn-light fw-bold">
+            <i class="fas fa-home me-2"></i>На главную
+        </a>
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-light fw-bold" onclick="trackLogoutClick()">
+            <i class="fas fa-sign-out-alt me-2"></i>Выйти
+        </a>
     </div>
 </div>
 {% endif %}
@@ -233,13 +377,128 @@
 
 {% block scripts %}
 <script>
-    // Удаляем старый JS код для регулировки высоты, так как теперь используем CSS-решение
     document.addEventListener('DOMContentLoaded', function () {
         // Функция для автоматической прокрутки к новым комментариям
         const commentsContainer = document.querySelector('.comments-scrollable');
-        if (commentsContainer && commentsContainer.scrollHeight > commentsContainer.clientHeight) {
-            commentsContainer.scrollTop = commentsContainer.scrollHeight;
+        if (commentsContainer) {
+            // Прокручиваем к низу, если есть комментарии
+            if (commentsContainer.scrollHeight > commentsContainer.clientHeight) {
+                commentsContainer.scrollTop = commentsContainer.scrollHeight;
+            }
+
+            // Добавляем обработчик для плавной прокрутки при добавлении новых комментариев
+            const observer = new MutationObserver(function () {
+                commentsContainer.scrollTo({
+                    top: commentsContainer.scrollHeight,
+                    behavior: 'smooth'
+                });
+            });
+
+            observer.observe(commentsContainer, { childList: true, subtree: true });
         }
+
+        // Инициализация счетчика символов
+        updateCharCount();
+
+        // Добавляем класс для страницы комментариев
+        document.body.classList.add('comments-page');
+    });
+
+    // Функция для обновления счетчика символов
+    function updateCharCount() {
+        const textarea = document.getElementById('body');
+        const charCount = document.getElementById('charCount');
+        if (textarea && charCount) {
+            const length = textarea.value.length;
+            charCount.textContent = length;
+
+            // Меняем цвет при приближении к лимиту
+            if (length > 450) {
+                charCount.style.color = '#ff6b6b';
+            } else if (length > 400) {
+                charCount.style.color = '#ffd93d';
+            } else {
+                charCount.style.color = '#ffffff';
+            }
+        }
+    }
+
+    // Функция для очистки формы
+    function clearForm() {
+        const textarea = document.getElementById('body');
+        if (textarea) {
+            textarea.value = '';
+            updateCharCount();
+            textarea.focus();
+        }
+    }
+
+    // Функции для отслеживания событий в GTM
+    function trackLoginClick(provider) {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            'event': 'login_button_click',
+            'provider': provider,
+            'page_location': '/comments'
+        });
+    }
+
+    function trackLogoutClick() {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            'event': 'logout_button_click',
+            'page_location': '/comments'
+        });
+    }
+
+    // Отслеживание отправки формы комментария
+    const commentForm = document.getElementById('commentForm');
+    if (commentForm) {
+        commentForm.addEventListener('submit', function (e) {
+            const commentText = this.querySelector('textarea[name="body"]')?.value;
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                'event': 'comment_submit',
+                'comment_length': commentText ? commentText.length : 0,
+                'page_location': '/comments'
+            });
+
+            // Показываем индикатор загрузки
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Отправка...';
+                submitBtn.disabled = true;
+            }
+        });
+    }
+
+    // Адаптивная высота textarea
+    const textarea = document.getElementById('body');
+    if (textarea) {
+        textarea.addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    }
+
+    // Плавная прокрутка к якорям
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            if (targetId === '#') return;
+
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
     });
 </script>
+
+<!-- Подключаем FontAwesome для иконок -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 {% endblock %}
