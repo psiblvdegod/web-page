@@ -192,8 +192,6 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    /* Заголовок страницы - УДАЛЕН */
-
     /* Стиль для auth-badge (одинаковый для Яндекс и Google) */
     .auth-badge {
         background: rgba(255, 255, 255, 0.15);
@@ -337,6 +335,22 @@
         margin-bottom: 1rem;
         opacity: 0.5;
     }
+
+    /* Новый заголовок страницы */
+    .page-header {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .page-header h3 {
+        color: #fff;
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        color: rgba(255, 255, 255, 0.7);
+    }
 </style>
 {% endblock %}
 
@@ -347,6 +361,12 @@
 
 {% block content %}
 <div class="comments-section">
+    <!-- Добавлен заголовок -->
+    <div class="page-header">
+        <h3>Comments Section</h3>
+        <p>Share your thoughts with the community</p>
+    </div>
+
     <div class="comments-content">
         <!-- Контейнер для прокрутки комментариев -->
         <div class="comments-scrollable">
