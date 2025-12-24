@@ -15,48 +15,33 @@ import requests
 from dotenv import load_dotenv
 import sys
 
-# Разрешаем http для OAuth локально
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-
-# Загрузка переменных окружения
 load_dotenv()
 
-# Получаем абсолютный путь к директории проекта
-BASE_DIR = Path(__file__).parent.absolute()
-
-# ============================
-# ОПРЕДЕЛЕНИЕ РЕДИРЕКТОВ В ЗАВИСИМОСТИ ОТ TARGET
-# ============================
 TARGET = os.getenv('TARGET', '').upper().strip()
 REMOTE_ADDRESS = os.getenv('REMOTE_ADDRESS', '').strip()
 
-# Проверяем корректность переменной TARGET
-if TARGET not in ['LOCAL', 'REMOTE']:
-    print("❌ ERROR: TARGET environment variable is not set correctly")
-    print("   TARGET should be either 'LOCAL' or 'REMOTE'")
-    print("   - LOCAL: for development on localhost")
-    print("   - REMOTE: for deployment on a remote server")
-    sys.exit(1)
-
-# Определяем URI в зависимости от TARGET
 if TARGET == 'LOCAL':
     DEFAULT_YANDEX_REDIRECT_URI = 'http://127.0.0.1:5001/login/yandex/authorized'
     DEFAULT_GOOGLE_REDIRECT_URI = 'http://127.0.0.1:5001/login/google/authorized'
 elif TARGET == 'REMOTE':
     if not REMOTE_ADDRESS:
-        print("❌ ERROR: TARGET is set to REMOTE but REMOTE_ADDRESS is not defined in .env")
+        print("   ERROR: TARGET is set to REMOTE but REMOTE_ADDRESS is not defined")
         print("   Please set REMOTE_ADDRESS to your server's IP or domain name")
-        print("   Example: REMOTE_ADDRESS=yourdomain.com or REMOTE_ADDRESS=192.168.1.100")
         sys.exit(1)
 
     REMOTE_ADDRESS = REMOTE_ADDRESS.replace('http://', '').replace('https://', '').rstrip('/')
     DEFAULT_YANDEX_REDIRECT_URI = f'https://{REMOTE_ADDRESS}/login/yandex/authorized'
     DEFAULT_GOOGLE_REDIRECT_URI = f'https://{REMOTE_ADDRESS}/login/google/authorized'
+else:
+    print("   ERROR: TARGET environment variable is not set correctly")
+    print("   TARGET should be either 'LOCAL' or 'REMOTE'")
+    print("   - LOCAL: for development on localhost")
+    print("   - REMOTE: for deployment on a remote server")
+    sys.exit(1)
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') or secrets.token_hex(32)
 
-# Настройки сессии для HTTPS
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') or secrets.token_hex(32)
 app.config['SESSION_COOKIE_SECURE'] = (TARGET == 'REMOTE')
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
@@ -67,8 +52,8 @@ app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 
 csrf = CSRFProtect(app)
 
-# База данных
-instance_path = BASE_DIR / 'instance'
+base_dir = Path(__file__).parent.absolute()
+instance_path = base_dir / 'instance'
 os.makedirs(instance_path, exist_ok=True)
 database_path = instance_path / 'site.db'
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{database_path}'
@@ -78,9 +63,6 @@ db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'index'
 
-# ============================
-# МОДЕЛИ БАЗЫ ДАННЫХ
-# ============================
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     yandex_id = db.Column(db.String(255), unique=True)
@@ -95,23 +77,14 @@ class Comment(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-# ============================
-# ФОРМЫ
-# ============================
 class CommentForm(FlaskForm):
     body = TextAreaField('Comment', validators=[DataRequired(), Length(min=1, max=500)])
     submit = SubmitField('Send')
 
-# ============================
-# LOGIN MANAGER
-# ============================
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# ============================
-# OAuth КЛЮЧИ
-# ============================
 YANDEX_CLIENT_ID = os.getenv('YANDEX_CLIENT_ID')
 YANDEX_CLIENT_SECRET = os.getenv('YANDEX_CLIENT_SECRET')
 YANDEX_REDIRECT_URI = os.getenv('YANDEX_REDIRECT_URI') or DEFAULT_YANDEX_REDIRECT_URI
@@ -123,12 +96,8 @@ GOOGLE_REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI') or DEFAULT_GOOGLE_REDIREC
 yandex_client = WebApplicationClient(YANDEX_CLIENT_ID) if YANDEX_CLIENT_ID else None
 google_client = WebApplicationClient(GOOGLE_CLIENT_ID) if GOOGLE_CLIENT_ID else None
 
-# ============================
-# ДАННЫЕ ДЛЯ GTM
-# ============================
 @app.before_request
 def before_request():
-    """Подготовка данных для Google Tag Manager"""
     g.gtm_data = {
         'page_path': request.path,
         'user_authenticated': current_user.is_authenticated,
@@ -143,12 +112,8 @@ def before_request():
         elif current_user.google_id:
             g.gtm_data['auth_method'] = 'google'
 
-# ============================
-# КОНТЕКСТНЫЙ ПРОЦЕССОР ДЛЯ GTM
-# ============================
 @app.context_processor
 def inject_gtm_data():
-    """Внедряет данные GTM во все шаблоны"""
     gtm_data = getattr(g, 'gtm_data', {})
     
     gtm_json = {
@@ -159,7 +124,6 @@ def inject_gtm_data():
         'page_path': gtm_data.get('page_path', ''),
     }
     
-    # Фильтруем None значения
     gtm_json = {k: v for k, v in gtm_json.items() if v is not None}
     
     return {
@@ -167,9 +131,6 @@ def inject_gtm_data():
         'TARGET': TARGET,
     }
 
-# ============================
-# МАРШРУТЫ
-# ============================
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -191,7 +152,7 @@ def comments():
         comment = Comment(body=form.body.data, user_id=current_user.id)
         db.session.add(comment)
         db.session.commit()
-        flash('Комментарий добавлен!', 'success')
+        flash('Comment was added successfully!', 'success')
         return redirect(url_for('comments'))
 
     return render_template('comments.html', comments=comments_list, form=form)
@@ -201,21 +162,18 @@ def comments():
 def delete_comment(comment_id):
     comment = Comment.query.get_or_404(comment_id)
     if comment.user_id != current_user.id:
-        flash('Вы можете удалять только свои комментарии.', 'danger')
+        flash('You can only delete your own comments.', 'danger')
         return redirect(url_for('comments'))
 
     db.session.delete(comment)
     db.session.commit()
-    flash('Комментарий удалён.', 'success')
+    flash('Comment deleted.', 'success')
     return redirect(url_for('comments'))
 
-# ============================
-# Яндекс OAuth (ИСПРАВЛЕННЫЕ URL)
-# ============================
 @app.route('/login/yandex')
 def login_yandex():
     if not yandex_client:
-        flash('Yandex OAuth отключён.', 'danger')
+        flash('Yandex OAuth is disabled.', 'danger')
         return redirect(url_for('comments'))
 
     request_uri = yandex_client.prepare_request_uri(
@@ -228,7 +186,7 @@ def login_yandex():
 @app.route('/login/yandex/authorized')
 def callback_yandex():
     if not yandex_client:
-        flash('Yandex OAuth отключён.', 'danger')
+        flash('Yandex OAuth is disabled.', 'danger')
         return redirect(url_for('comments'))
 
     code = request.args.get('code')
@@ -268,16 +226,13 @@ def callback_yandex():
             db.session.commit()
 
     login_user(user, remember=True)
-    flash(f'Вы успешно вошли через Yandex как {user.name or user.email}!', 'success')
+    flash(f'You have successfully logged in via Yandex as {user.name or user.email}!', 'success')
     return redirect(url_for('comments'))
 
-# ============================
-# Google OAuth (ИСПРАВЛЕННЫЕ URL)
-# ============================
 @app.route('/login/google')
 def login_google():
     if not google_client:
-        flash('Google OAuth отключён.', 'danger')
+        flash('Google OAuth is disabled.', 'danger')
         return redirect(url_for('comments'))
 
     request_uri = google_client.prepare_request_uri(
@@ -295,7 +250,7 @@ def login_google():
 @app.route('/login/google/authorized')
 def callback_google():
     if not google_client:
-        flash('Google OAuth отключён.', 'danger')
+        flash('Google OAuth is disabled.', 'danger')
         return redirect(url_for('comments'))
 
     code = request.args.get('code')
@@ -335,28 +290,22 @@ def callback_google():
             db.session.commit()
 
     login_user(user, remember=True)
-    flash(f'Вы успешно вошел через Google как {user.name or user.email}!', 'success')
+    flash(f'You have successfully logged in via Google as {user.name or user.email}!', 'success')
     return redirect(url_for('comments'))
 
-# ============================
-# Выход
-# ============================
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
-    flash('Вы вышли из системы.', 'info')
+    flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
-# ============================
-# ЗАПУСК
-# ============================
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        print("✅ База данных готова")
+        print("Database is ready")
 
-    print(f"🚀 Приложение запущено. HTTPS: {TARGET == 'REMOTE'}")
+    print(f"Application started. HTTPS: {TARGET == 'REMOTE'}")
     if TARGET == 'LOCAL':
         app.run(host='0.0.0.0', port=5001, debug=True)
     else:
