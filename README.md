@@ -29,4 +29,5 @@ DATABASE_URI=sqlite:///instance/site.db
 3. get `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` from https://console.cloud.google.com
 4. run app using `./app.py`
 
-`TARGET=LOCAL` or `TARGET=REMOTE`
+`TARGET=LOCAL` for development on localhost or `TARGET=REMOTE` for deployment on a `REMOTE_ADDRESS`
+
