@@ -1,17 +1,18 @@
-ls
-echo -e "> cat tree static\n"
-tree static
-echo -e "> cat tree templates\n"
-tree templates
-echo -e "> cat templates/index.html\n"
-cat templates/index.html
-echo -e "> cat templates/features.html\n"
-cat cat templates/features.html
-echo -e "> cat static/css/cover.css\n"
-cat static/css/cover.css
-echo -e "> cat templates/contacts.html\n"
-cat cat templates/contacts.html
-echo -e "> cat templates/comments.html\n"
-cat cat templates/comments.html
-echo -e "> cat static/js/color-modes.js\n"
-cat static/js/color-modes.js
+#!/bin/zsh
+
+show() {
+  printf '\n$ %s\n' "$1"
+  eval "$1"
+}
+
+show "ls"
+show "tree static"
+show "tree templates"
+show "cat templates/index.html"
+show "cat static/css/cover.css"
+show "cat templates/base.html"
+show "cat templates/index.html"
+show "cat templates/about.html"
+show "cat templates/comments.html"
+show "cat templates/contacts.html"
+show "cat app.py"
