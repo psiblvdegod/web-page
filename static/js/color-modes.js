@@ -17,11 +17,9 @@
         }
     }
 
-    // Initialize
     const theme = getPreferredTheme()
     setTheme(theme)
 
-    // Dropdown buttons
     const btns = document.querySelectorAll('[data-bs-theme-value]')
     btns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -29,7 +27,6 @@
             localStorage.setItem('theme', val)
             setTheme(val)
 
-            // update active states in dropdown
             btns.forEach(b => b.classList.remove('active'))
             btn.classList.add('active')
         })
