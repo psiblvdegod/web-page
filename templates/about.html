@@ -4,25 +4,6 @@
 
 {% block styles %}
 <style>
-    body {
-        overflow: hidden;
-        margin: 0;
-        padding: 0;
-        height: 100vh;
-        position: relative;
-    }
-
-    .gif-background {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-        object-fit: cover;
-        opacity: 0.7;
-    }
-
     .profile-img {
         width: 250px;
         height: 250px;
@@ -36,7 +17,7 @@
 {% endblock %}
 
 {% block background %}
-<img src="{{ url_for('static', filename='images/about-back.gif') }}" class="gif-background" alt="About background">
+<img src="{{ url_for('static', filename='images/about-back.gif') }}" class="gif-background" alt="about background">
 {% endblock %}
 
 {% block content %}
@@ -51,6 +32,6 @@
         <li>😝 OOP hater</li>
         <li>🕸️ beginner web developer</li>
     </ul>
-    <a href="{{ url_for('index') }}" class="btn btn-light fw-bold border-white bg-white">Back to Home</a>
+    <a href="{{ url_for('index') }}" class="btn btn-lg btn-outline-light fw-bold">Back to Home</a>
 </main>
 {% endblock %}
