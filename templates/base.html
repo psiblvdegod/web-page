@@ -52,13 +52,13 @@
                 <nav class="nav nav-masthead justify-content-center float-md-end">
                     {% block nav %}
                     <a class="nav-link fw-bold py-1 px-0 {% if request.endpoint == 'index' %}active{% endif %}"
-                        href="{{ url_for('index') }}">Home</a>
+                        href="{{ url_for('index') }}">Главная</a>
                     <a class="nav-link fw-bold py-1 px-0 {% if request.endpoint == 'about' %}active{% endif %}"
-                        href="{{ url_for('about') }}">About</a>
+                        href="{{ url_for('about') }}">Обо мне</a>
                     <a class="nav-link fw-bold py-1 px-0 {% if request.endpoint == 'contacts' %}active{% endif %}"
-                        href="{{ url_for('contacts') }}">Contact</a>
+                        href="{{ url_for('contacts') }}">Контакты</a>
                     <a class="nav-link fw-bold py-1 px-0 {% if request.endpoint == 'comments' %}active{% endif %}"
-                        href="{{ url_for('comments') }}">Comments</a>
+                        href="{{ url_for('comments') }}">Комментарии</a>
                     {% endblock %}
                 </nav>
             </div>
@@ -69,7 +69,7 @@
         </main>
 
         <footer class="mt-auto text-white-50">
-            <p>By using this website, you agree to our use of cookies.</p>
+            <p>Используя сайт, Вы соглашаетесь с использованием cookies.</p>
         </footer>
     </div>
 

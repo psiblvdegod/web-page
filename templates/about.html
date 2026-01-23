@@ -23,15 +23,14 @@
 {% block content %}
 <main class="px-3 text-center">
     <img src="{{ url_for('static', filename='images/photo.jpg') }}" alt="Profile" class="profile-img">
-    <h1>Balyshev A.M</h1>
-    <p class="lead text-white-50">SPbU SE '28 student</p>
+    <h1>Балышев А.М</h1>
+    <p class="lead text-white-50">Студент СПбГУ ПИ '28</p>
     <h4>About me:</h4>
     <ul class="list-unstyled text-white-50 mb-3">
-        <li>💻 RISC-V compiler engineer</li>
-        <li>👩🏻‍🔬 FP fan</li>
-        <li>😝 OOP hater</li>
-        <li>🕸️ beginner web developer</li>
+        <li>💻 Начинающий компиляторный инженер</li>
+        <li>💸 Стипендиат YADRO</li>
+        <li>🕸️ Веб-разработчик</li>
     </ul>
-    <a href="{{ url_for('index') }}" class="btn btn-lg btn-outline-light fw-bold">Back to Home</a>
+    <a href="{{ url_for('index') }}" class="btn btn-lg btn-outline-light fw-bold">На главную</a>
 </main>
 {% endblock %}
