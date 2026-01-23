@@ -355,11 +355,11 @@
             <div class="login-buttons">
                 <a href="{{ url_for('login_yandex') }}" class="btn btn-light fw-bold login-button"
                     onclick="trackLoginClick('yandex')">
-                    Авторизоваться через Yandex
+                    Войти через Yandex
                 </a>
                 <a href="{{ url_for('login_google') }}" class="btn btn-light fw-bold login-button"
                     onclick="trackLoginClick('google')">
-                    Авторизоваться через Google
+                    Войти через Google
                 </a>
             </div>
             <div class="mt-3 text-center">
@@ -373,7 +373,7 @@
 {% if current_user.is_authenticated %}
 <div class="auth-status">
     <div class="auth-info">
-        Вы авторизованы как <strong>{{ current_user.name or current_user.email }}</strong>
+        Вы вошли как <strong>{{ current_user.name or current_user.email }}</strong>
         {% if current_user.yandex_id %}
         <span class="badge auth-badge">Yandex</span>
         {% elif current_user.google_id %}
