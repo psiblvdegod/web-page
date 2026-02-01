@@ -47,13 +47,13 @@
 
     gtag('config', 'G-0BTH5N4X5L');
 </script>
-<!-- End Google tag (gtag.js) -->
+<!-- /Google tag (gtag.js) -->
 
 <body class="d-flex h-100 text-center text-bg-dark">
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TN4N627J" height="0" width="0"
             style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
+    <!-- /Google Tag Manager (noscript) -->
 
     <!-- Yandex.Metrika counter -->
     <noscript>
@@ -61,7 +61,12 @@
     </noscript>
     <!-- /Yandex.Metrika counter -->
 
-    {% block background %}{% endblock %}
+    <!-- default back -->
+    {% block background %}
+    <img src="{{ url_for('static', filename='images/base-back.jpg') }}" class="page-background"
+        alt="base background should be here">
+    {% endblock %}
+    <!-- /default back -->
 
     <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
         <header class="mb-auto">
