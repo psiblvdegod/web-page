@@ -3,7 +3,7 @@ import os
 import secrets
 from datetime import datetime
 from pathlib import Path
-from flask import Flask, render_template, redirect, url_for, request, flash, g
+from flask import Flask, render_template, redirect, url_for, request, flash, g, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_wtf import FlaskForm
@@ -49,6 +49,11 @@ app.config['REMEMBER_COOKIE_SECURE'] = (TARGET == 'REMOTE')
 app.config['REMEMBER_COOKIE_HTTPONLY'] = True
 app.config['REMEMBER_COOKIE_DURATION'] = 2592000
 app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
+
+# disable cache
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+# /disable cache
 
 csrf = CSRFProtect(app)
 
@@ -98,6 +103,13 @@ google_client = WebApplicationClient(GOOGLE_CLIENT_ID) if GOOGLE_CLIENT_ID else 
 
 @app.before_request
 def before_request():
+    # disable cache
+    try:
+        app.jinja_env.cache.clear()
+    except Exception:
+        pass
+    # /disable cache
+
     g.gtm_data = {
         'page_path': request.path,
         'user_authenticated': current_user.is_authenticated,
@@ -130,6 +142,20 @@ def inject_gtm_data():
         'gtm_data': gtm_json,
         'TARGET': TARGET,
     }
+
+# disable cache
+@app.after_request
+def add_no_cache_headers(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    response.headers['Surrogate-Control'] = 'no-store'
+
+    response.headers.pop('ETag', None)
+    response.headers.pop('Last-Modified', None)
+
+    return response
+# /disable cache
 
 @app.route('/')
 def index():
