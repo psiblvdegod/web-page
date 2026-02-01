@@ -143,6 +143,10 @@ def about():
 def contacts():
     return render_template('contacts.html')
 
+@app.route('/projects')
+def about():
+    return render_template('projects.html')
+
 @app.route('/comments', methods=['GET', 'POST'])
 def comments():
     form = CommentForm()

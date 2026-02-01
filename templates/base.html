@@ -73,6 +73,8 @@
                         href="{{ url_for('index') }}">Главная</a>
                     <a class="nav-link fw-bold py-1 px-0 {% if request.endpoint == 'about' %}active{% endif %}"
                         href="{{ url_for('about') }}">Обо мне</a>
+                    <a class="nav-link fw-bold py-1 px-0 {% if request.endpoint == 'projects' %}active{% endif %}"
+                        href="{{ url_for('projects') }}">Мои проекты</a>
                     <a class="nav-link fw-bold py-1 px-0 {% if request.endpoint == 'contacts' %}active{% endif %}"
                         href="{{ url_for('contacts') }}">Контакты</a>
                     <a class="nav-link fw-bold py-1 px-0 {% if request.endpoint == 'comments' %}active{% endif %}"

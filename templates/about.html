@@ -5,8 +5,8 @@
 {% block styles %}
 <style>
     .profile-img {
-        width: 200px;
-        height: 200px;
+        width: 250px;
+        height: 250px;
         border-radius: 50%;
         object-fit: cover;
         margin-bottom: 1.5rem;
@@ -23,20 +23,13 @@
 {% block content %}
 <main class="px-3 text-center">
     <img src="{{ url_for('static', filename='images/photo.jpg') }}" alt="Profile" class="profile-img">
-    <h3>Балышев А.М</h3>
+    <h2>Балышев А.М</h2>
     <p class="lead text-white-50">Обо мне</p>
     <ul class="list-unstyled text-white-50 mb-3">
         <li>📚 Студент СПбГУ ПИ '28</li>
         <li>💻 Начинающий компиляторный инженер</li>
         <li>💸 Стипендиат YADRO</li>
         <li>🕸️ Веб-разработчик</li>
-    </ul>
-    <p class="lead text-white-50">Проекты</p>
-    <ul class="list-unstyled text-white-50 mb-3">
-        <li>ADT для rukaml</li>
-        <li>Интерпретатор miniML</li>
-        <li>Компилятор вымышленного императивного языка</li>
-        <li>Персональная веб-страница</li>
     </ul>
     <a href="{{ url_for('index') }}" class="btn btn-lg btn-outline-light fw-bold">На главную</a>
 </main>
