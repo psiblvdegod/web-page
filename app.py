@@ -51,7 +51,7 @@ app.config['REMEMBER_COOKIE_DURATION'] = 2592000
 app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 
 # disable cache
-app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 30
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 # /disable cache
 
