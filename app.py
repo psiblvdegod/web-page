@@ -144,7 +144,7 @@ def contacts():
     return render_template('contacts.html')
 
 @app.route('/projects')
-def about():
+def projects():
     return render_template('projects.html')
 
 @app.route('/comments', methods=['GET', 'POST'])
